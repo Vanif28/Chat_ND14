@@ -20,10 +20,28 @@ async function getUsers() {
   }
 }
 
+async function existsUser(login) {
+  try{
+    let [users, fields] = await adb.query("SELECT * FROM User WHERE login = ?", [login]);
+    return users.length > 0;
+  } catch (err) {
+    throw err.message;
+  }
+}
+
+async function addUser(login, password) {
+  try{
+    let [users, fields] = await adb.query("INSERT INTO User(login, password) VALUES(?, ?)", [login, password]);
+    return users.length > 0;
+  } catch (err) {
+    throw err.message;
+  }
+}
+
+
 async function addMessage(content, author_id) {
   try {
-    let [users, fields] = await adb.query(
-      "Insert into Message1(content, author_id) values(?, ?)",
+    let [users, fields] = await adb.query("Insert into Message(content, author_id) values(?, ?)",
       [content, author_id]
     );
     return users;
@@ -31,9 +49,14 @@ async function addMessage(content, author_id) {
     throw err.message;
   }
 }
-async function getMessages(){
+
+async function getMessages() {
   try {
-    let [users, fields] = await adb.query(`SELECT m.id, m.content, a.id from Message1 ON m JOIN `);
+    let [users, fiellds] = await adb
+    .query(`SELECT m.id, m.content, m.author_id, u.login
+      FROM Message as m 
+      JOIN User as u 
+      ON m.author_id = u.id`)
     return users;
   } catch (err) {
     throw err.message;
@@ -42,4 +65,8 @@ async function getMessages(){
 
 module.exports = {
   getUsers,
+  addMessage,
+  getMessages,
+  existsUser,
+  addUser
 };
